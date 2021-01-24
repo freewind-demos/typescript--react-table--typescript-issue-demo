@@ -1,6 +1,6 @@
 import React from 'react'
 
-import {useTable} from 'react-table';
+import {useTable, useSortBy} from 'react-table';
 import columnsDefs from './columnDefs';
 import {data} from './data';
 
@@ -15,7 +15,7 @@ export default function Hello() {
   } = useTable({
     columns: columnsDefs,
     data
-  })
+  }, useSortBy)
 
   return <div>
     <h1>Hello React-Table</h1>
@@ -24,14 +24,20 @@ export default function Hello() {
       {headerGroups.map(headerGroup => (
         <tr {...headerGroup.getHeaderGroupProps()}>
           {headerGroup.headers.map(column => (
-            <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+            // Notice: without fixing in "typing-fix/react-table-config.ts", we will have typing errors on:
+            // 1. column.getSortByToggleProps
+            // 2. column.isSorted
+            // 3. column.isSortedDesc
+            <th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render('Header')}
+              <span>{column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}</span>
+            </th>
           ))}
         </tr>
       ))}
       </thead>
       <tbody {...getTableBodyProps()}>
       {rows.map((row, i) => {
-        prepareRow(row)
+          prepareRow(row)
           return (
             <tr {...row.getRowProps()}>
               {row.cells.map(cell => {
